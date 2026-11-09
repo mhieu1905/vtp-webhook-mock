@@ -28,6 +28,6 @@ describe('Integration test for server and public assets', () => {
     const vercelPath = path.join(__dirname, '..', 'vercel.json');
     assert.ok(fs.existsSync(vercelPath), 'vercel.json must exist');
     const parsed = JSON.parse(fs.readFileSync(vercelPath, 'utf-8'));
-    assert.ok(parsed.rewrites, 'Should specify rewrites');
+    assert.ok(parsed.cleanUrls, 'Should specify cleanUrls');
   });
 });

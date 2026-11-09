@@ -1,8 +1,3 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/api/send-webhook", "destination": "/api/send-webhook.js" },
-    { "source": "/(.*)", "destination": "/public/$1" }
-  ]
+  "cleanUrls": true
 }
