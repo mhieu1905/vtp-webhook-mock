@@ -35,8 +35,16 @@
       <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span>Mock Engine Sẵn Sàng</span>
-      </div>
     </header>
+
+    <!-- Environment Warning Banner -->
+    <div id="envWarningBanner" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-xl text-xs flex items-start gap-3">
+      <svg class="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      <div>
+        <p class="font-semibold text-amber-200">Cảnh báo: Bạn đang mở trang web dưới dạng File tĩnh (file:///) hoặc cổng không có Backend Node.js</p>
+        <p class="text-amber-300/80 mt-1">Để tính năng bắn Webhook hoạt động (Node.js proxy tránh lỗi CORS), vui lòng mở terminal chạy <code class="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200">npm start</code> và truy cập qua: <a href="http://localhost:3000" class="underline font-semibold text-amber-100 hover:text-white">http://localhost:3000</a>.</p>
+      </div>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -453,13 +461,28 @@
           })
         });
 
-        const result = await response.json();
+        const rawText = await response.text();
+        let result;
+        try {
+          result = JSON.parse(rawText);
+        } catch {
+          result = {
+            success: false,
+            status: response.status || 404,
+            statusText: response.statusText || 'Route Not Found',
+            durationMs: 0,
+            error: rawText.trim().startsWith('<')
+              ? `Không tìm thấy endpoint backend /api/send-webhook (Server trả về mã HTML thay vì JSON).\n\n👉 NGUYÊN DO: Bạn có thể đang mở file HTML trực tiếp (file:///) hoặc dùng extension 'Live Server' trên VS Code.\n👉 CÁCH KHẮC PHỤC: Mở terminal tại E:\\PROJECT\\vtp-webhook-mock, chạy lệnh 'npm start' rồi mở đúng địa chỉ http://localhost:3000`
+              : `Server phản hồi nội dung không phải JSON: ${rawText}`
+          };
+        }
+
         renderResult(result, targetUrl, payload);
       } catch (err) {
         renderResult({
           success: false,
           status: 0,
-          statusText: 'Client Error',
+          statusText: 'Network / Client Error',
           durationMs: 0,
           error: err.message
         }, targetUrl, payload);
@@ -541,8 +564,28 @@
       showToast('Đã xóa lịch sử gửi');
     });
 
+    // Kiểm tra kết nối Backend API proxy
+    function checkBackendConnection() {
+      if (window.location.protocol === 'file:') {
+        document.getElementById('envWarningBanner').classList.remove('hidden');
+        return;
+      }
+
+      fetch('/api/send-webhook')
+        .then(res => {
+          const ct = res.headers.get('content-type') || '';
+          if (!ct.includes('application/json')) {
+            document.getElementById('envWarningBanner').classList.remove('hidden');
+          }
+        })
+        .catch(() => {
+          document.getElementById('envWarningBanner').classList.remove('hidden');
+        });
+    }
+
     // Run Init
     initInputs();
+    checkBackendConnection();
   </script>
 </body>
 </html>
