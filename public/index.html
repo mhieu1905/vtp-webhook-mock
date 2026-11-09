@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViettelPost Webhook Mock Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center text-red-500 font-bold text-lg">
+            VTP
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              ViettelPost Webhook Mock
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Tester Tool</span>
+            </h1>
+            <p class="text-sm text-slate-400">Giả lập các trạng thái giao hàng và bắn webhook tới hệ thống của bạn</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Mock Engine Sẵn Sàng</span>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Form & Options -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Card 1: Cấu hình Input chính -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 shadow-lg space-y-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            1. Cấu hình Đầu Vào (Inputs)
+          </h2>
+
+          <!-- Target Webhook URL -->
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">
+              Target Webhook URL <span class="text-red-400">*</span>
+              <span class="text-slate-500 font-normal">(Endpoint hệ thống của bạn nhận webhook)</span>
+            </label>
+            <div class="relative">
+              <input type="url" id="targetUrl" placeholder="https://api.yourdomain.com/webhooks/viettelpost hoặc http://localhost:8080/..." 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono">
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Được lưu tự động vào trình duyệt (LocalStorage).</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Token VTP -->
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">
+                Token ViettelPost <span class="text-red-400">*</span>
+              </label>
+              <input type="text" id="vtpToken" value="xxx" placeholder="Nhập token..." 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono">
+            </div>
+
+            <!-- Mã đơn hàng -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-medium text-slate-300">
+                  Mã đơn hàng <span class="text-red-400">*</span>
+                </label>
+                <button type="button" id="btnNotFound" class="text-[11px] text-amber-400 hover:text-amber-300 underline underline-offset-2">
+                  Gán "TRACKING-NOT-FOUND"
+                </button>
+              </div>
+              <input type="text" id="orderNumber" value="303296563226" placeholder="Mã vận đơn VTP..." 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono">
+            </div>
+          </div>
+
+          <!-- Thời gian ORDER_STATUSDATE -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium text-slate-300">
+                Thời gian (ORDER_STATUSDATE)
+              </label>
+              <button type="button" id="btnCurrentTime" class="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Lấy giờ hiện tại
+              </button>
+            </div>
+            <input type="text" id="orderStatusDate" placeholder="DD/MM/YYYY HH:mm:ss" 
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono">
+          </div>
+        </div>
+
+        <!-- Card 2: Lựa chọn Trạng Thái (Status Codes) -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              2. Chọn Trạng Thái Mock (Status Code)
+            </h2>
+            <span class="text-xs text-slate-400">Click để chọn</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="statusOptionsContainer">
+            <!-- Button 200 -->
+            <button type="button" data-code="200" data-name="Đã lấy hàng" 
+              class="status-btn text-left p-3 rounded-lg border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition-all flex items-center justify-between group active-status">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">200</span>
+                  <span class="text-sm font-medium text-slate-200">Đã lấy hàng</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Viettel Post đã nhận hàng từ người gửi</p>
+              </div>
+              <span class="radio-indicator w-3.5 h-3.5 rounded-full border border-blue-400 bg-blue-500"></span>
+            </button>
+
+            <!-- Button 500 -->
+            <button type="button" data-code="500" data-name="Đang vận chuyển" 
+              class="status-btn text-left p-3 rounded-lg border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition-all flex items-center justify-between group">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">500</span>
+                  <span class="text-sm font-medium text-slate-200">Đang vận chuyển</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Hàng đang luân chuyển giữa các bưu cục</p>
+              </div>
+              <span class="radio-indicator w-3.5 h-3.5 rounded-full border border-slate-600 bg-transparent"></span>
+            </button>
+
+            <!-- Button 501 -->
+            <button type="button" data-code="501" data-name="Giao hàng thành công" 
+              class="status-btn text-left p-3 rounded-lg border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition-all flex items-center justify-between group">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">501</span>
+                  <span class="text-sm font-medium text-slate-200">Giao hàng thành công</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Giao khách xong hoặc hoàn về seller thành công</p>
+              </div>
+              <span class="radio-indicator w-3.5 h-3.5 rounded-full border border-slate-600 bg-transparent"></span>
+            </button>
+
+            <!-- Button 506 -->
+            <button type="button" data-code="506" data-name="Giao hàng không thành công" 
+              class="status-btn text-left p-3 rounded-lg border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition-all flex items-center justify-between group">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">506</span>
+                  <span class="text-sm font-medium text-slate-200">Giao không thành công</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Khách hẹn lại hoặc không liên lạc được</p>
+              </div>
+              <span class="radio-indicator w-3.5 h-3.5 rounded-full border border-slate-600 bg-transparent"></span>
+            </button>
+
+            <!-- Button 999 (Status không hỗ trợ) -->
+            <button type="button" data-code="999" data-name="Trạng thái giả lập không hỗ trợ" 
+              class="status-btn text-left p-3 rounded-lg border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition-all flex items-center justify-between group sm:col-span-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">999</span>
+                  <span class="text-sm font-medium text-slate-200">Trạng thái không hỗ trợ (Edge Case)</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Mô phỏng trường hợp ViettelPost gửi mã status lạ để test khả năng xử lý exception</p>
+              </div>
+              <span class="radio-indicator w-3.5 h-3.5 rounded-full border border-slate-600 bg-transparent"></span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Live Preview & Dispatch Result -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Card 3: Preview JSON & Send Action -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 shadow-lg space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              Payload JSON Sắp Gửi
+            </h2>
+            <button type="button" id="btnCopyJson" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-700/50 hover:bg-slate-700 transition flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Sao chép
+            </button>
+          </div>
+
+          <div class="relative">
+            <pre id="jsonPreview" class="bg-slate-950 text-emerald-400 p-4 rounded-lg text-xs overflow-x-auto border border-slate-800 max-h-56 leading-relaxed select-all"></pre>
+          </div>
+
+          <!-- Nút Gửi Webhook -->
+          <button type="button" id="btnSendWebhook" 
+            class="w-full py-3 px-4 rounded-lg bg-red-600 hover:bg-red-500 active:scale-[0.99] text-white font-semibold text-sm transition-all shadow-lg shadow-red-600/30 flex items-center justify-center gap-2">
+            <svg id="sendIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span id="btnSendText">BẮN WEBHOOK NGAY</span>
+          </button>
+        </div>
+
+        <!-- Card 4: Kết quả phản hồi (Response Inspector) -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 shadow-lg space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Kết Quả Phản Hồi (Response)
+            </h2>
+            <span id="responseStatusBadge" class="hidden text-xs font-semibold px-2.5 py-0.5 rounded-full"></span>
+          </div>
+
+          <div id="responseContainer" class="text-xs text-slate-400">
+            <div id="emptyResponseState" class="py-8 text-center text-slate-500">
+              Chưa có webhook nào được gửi trong phiên này.
+            </div>
+
+            <div id="activeResponseState" class="hidden space-y-3">
+              <div class="flex items-center justify-between text-xs bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-700/60">
+                <span class="text-slate-400">Độ trễ (Latency): <strong id="responseLatency" class="text-slate-200">-- ms</strong></span>
+                <span class="text-slate-400">Thời gian: <strong id="responseTime" class="text-slate-200">--</strong></span>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] text-slate-400 font-medium">Response Body:</span>
+                </div>
+                <pre id="responseBodyView" class="bg-slate-950 text-slate-200 p-3 rounded-lg text-xs overflow-x-auto border border-slate-800 max-h-48 leading-relaxed"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- History Footer -->
+    <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Lịch sử bắn gần nhất</h3>
+        <button type="button" id="btnClearHistory" class="text-xs text-slate-500 hover:text-slate-300">Xóa lịch sử</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="text-slate-500 border-b border-slate-800">
+            <tr>
+              <th class="py-2 px-3">Thời gian</th>
+              <th class="py-2 px-3">Status Code</th>
+              <th class="py-2 px-3">Mã đơn</th>
+              <th class="py-2 px-3">Target URL</th>
+              <th class="py-2 px-3">HTTP Result</th>
+              <th class="py-2 px-3">Độ trễ</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody" class="divide-y divide-slate-800/50 text-slate-300">
+            <tr id="emptyHistoryRow"><td colspan="6" class="py-4 text-center text-slate-500">Chưa có lịch sử gửi.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-slate-100 text-xs px-4 py-2.5 rounded-lg border border-slate-700 shadow-xl opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
+    <span id="toastMsg">Đã sao chép!</span>
+  </div>
+
+  <script>
+    // Constants & State
+    const STORAGE_KEY_TARGET = 'vtp_mock_target_url';
+    const STORAGE_KEY_TOKEN = 'vtp_mock_token';
+    const STORAGE_KEY_ORDER = 'vtp_mock_order_number';
+
+    let currentStatusCode = 200;
+    let currentStatusName = 'Đã lấy hàng';
+    let historyList = [];
+
+    // Elements
+    const targetUrlInput = document.getElementById('targetUrl');
+    const tokenInput = document.getElementById('vtpToken');
+    const orderNumberInput = document.getElementById('orderNumber');
+    const orderStatusDateInput = document.getElementById('orderStatusDate');
+    const btnCurrentTime = document.getElementById('btnCurrentTime');
+    const btnNotFound = document.getElementById('btnNotFound');
+    const jsonPreview = document.getElementById('jsonPreview');
+    const btnCopyJson = document.getElementById('btnCopyJson');
+    const btnSendWebhook = document.getElementById('btnSendWebhook');
+    const btnSendText = document.getElementById('btnSendText');
+    const sendIcon = document.getElementById('sendIcon');
+    const responseStatusBadge = document.getElementById('responseStatusBadge');
+    const emptyResponseState = document.getElementById('emptyResponseState');
+    const activeResponseState = document.getElementById('activeResponseState');
+    const responseLatency = document.getElementById('responseLatency');
+    const responseTime = document.getElementById('responseTime');
+    const responseBodyView = document.getElementById('responseBodyView');
+    const historyTableBody = document.getElementById('historyTableBody');
+    const emptyHistoryRow = document.getElementById('emptyHistoryRow');
+    const btnClearHistory = document.getElementById('btnClearHistory');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    // Utility: Format current date to ViettelPost DD/MM/YYYY HH:mm:ss
+    function getVtpFormattedNow() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    function showToast(message) {
+      toastMsg.textContent = message;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // Build Current Payload Object
+    function getCurrentPayload() {
+      return {
+        TOKEN: tokenInput.value || 'xxx',
+        DATA: {
+          ORDER_NUMBER: orderNumberInput.value ? orderNumberInput.value.trim() : 'TRACKING-NOT-FOUND',
+          ORDER_STATUSDATE: orderStatusDateInput.value || getVtpFormattedNow(),
+          ORDER_STATUS: Number(currentStatusCode),
+          STATUS_NAME: currentStatusName
+        }
+      };
+    }
+
+    // Update Live JSON Preview
+    function updateJsonPreview() {
+      const payload = getCurrentPayload();
+      jsonPreview.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    // Initialize inputs from LocalStorage
+    function initInputs() {
+      const savedTarget = localStorage.getItem(STORAGE_KEY_TARGET);
+      if (savedTarget) targetUrlInput.value = savedTarget;
+
+      const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
+      if (savedToken) tokenInput.value = savedToken;
+
+      const savedOrder = localStorage.getItem(STORAGE_KEY_ORDER);
+      if (savedOrder) orderNumberInput.value = savedOrder;
+
+      orderStatusDateInput.value = getVtpFormattedNow();
+      updateJsonPreview();
+    }
+
+    // Save inputs to LocalStorage
+    function saveInputs() {
+      localStorage.setItem(STORAGE_KEY_TARGET, targetUrlInput.value.trim());
+      localStorage.setItem(STORAGE_KEY_TOKEN, tokenInput.value.trim());
+      localStorage.setItem(STORAGE_KEY_ORDER, orderNumberInput.value.trim());
+    }
+
+    // Event Listeners for inputs
+    targetUrlInput.addEventListener('input', () => { saveInputs(); });
+    tokenInput.addEventListener('input', () => { saveInputs(); updateJsonPreview(); });
+    orderNumberInput.addEventListener('input', () => { saveInputs(); updateJsonPreview(); });
+    orderStatusDateInput.addEventListener('input', () => { updateJsonPreview(); });
+
+    btnCurrentTime.addEventListener('click', () => {
+      orderStatusDateInput.value = getVtpFormattedNow();
+      updateJsonPreview();
+      showToast('Đã cập nhật thời gian hiện tại');
+    });
+
+    btnNotFound.addEventListener('click', () => {
+      orderNumberInput.value = 'TRACKING-NOT-FOUND';
+      saveInputs();
+      updateJsonPreview();
+      showToast('Đã gán mã TRACKING-NOT-FOUND');
+    });
+
+    // Copy JSON to clipboard
+    btnCopyJson.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(jsonPreview.textContent);
+        showToast('Đã sao chép JSON vào Clipboard!');
+      } catch {
+        showToast('Không thể sao chép');
+      }
+    });
+
+    // Handle Status Selection Buttons
+    const statusButtons = document.querySelectorAll('.status-btn');
+    statusButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        statusButtons.forEach(b => {
+          b.classList.remove('border-red-500', 'bg-slate-800');
+          const indicator = b.querySelector('.radio-indicator');
+          indicator.classList.remove('bg-red-500', 'border-red-400');
+          indicator.classList.add('bg-transparent', 'border-slate-600');
+        });
+
+        btn.classList.add('border-red-500', 'bg-slate-800');
+        const activeIndicator = btn.querySelector('.radio-indicator');
+        activeIndicator.classList.remove('bg-transparent', 'border-slate-600');
+        activeIndicator.classList.add('bg-red-500', 'border-red-400');
+
+        currentStatusCode = Number(btn.getAttribute('data-code'));
+        currentStatusName = btn.getAttribute('data-name');
+        updateJsonPreview();
+      });
+    });
+
+    // Send Webhook Action
+    btnSendWebhook.addEventListener('click', async () => {
+      const targetUrl = targetUrlInput.value.trim();
+      if (!targetUrl) {
+        alert('Vui lòng nhập Target Webhook URL của hệ thống bạn!');
+        targetUrlInput.focus();
+        return;
+      }
+
+      saveInputs();
+      const payload = getCurrentPayload();
+
+      // UI Loading state
+      btnSendWebhook.disabled = true;
+      btnSendWebhook.classList.add('opacity-70', 'cursor-not-allowed');
+      btnSendText.textContent = 'ĐANG GỬI...';
+      sendIcon.classList.add('animate-spin');
+
+      try {
+        const response = await fetch('/api/send-webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetUrl,
+            token: payload.TOKEN,
+            orderNumber: payload.DATA.ORDER_NUMBER,
+            orderStatus: payload.DATA.ORDER_STATUS,
+            statusName: payload.DATA.STATUS_NAME,
+            statusDate: payload.DATA.ORDER_STATUSDATE
+          })
+        });
+
+        const result = await response.json();
+        renderResult(result, targetUrl, payload);
+      } catch (err) {
+        renderResult({
+          success: false,
+          status: 0,
+          statusText: 'Client Error',
+          durationMs: 0,
+          error: err.message
+        }, targetUrl, payload);
+      } finally {
+        btnSendWebhook.disabled = false;
+        btnSendWebhook.classList.remove('opacity-70', 'cursor-not-allowed');
+        btnSendText.textContent = 'BẮN WEBHOOK NGAY';
+        sendIcon.classList.remove('animate-spin');
+      }
+    });
+
+    // Render Webhook Result
+    function renderResult(result, targetUrl, payload) {
+      emptyResponseState.classList.add('hidden');
+      activeResponseState.classList.remove('hidden');
+
+      responseStatusBadge.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30', 'bg-rose-500/20', 'text-rose-400', 'border-rose-500/30', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/30');
+
+      if (result.success && result.status >= 200 && result.status < 300) {
+        responseStatusBadge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        responseStatusBadge.textContent = `${result.status} ${result.statusText || 'OK'}`;
+      } else if (result.status > 0) {
+        responseStatusBadge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        responseStatusBadge.textContent = `${result.status} ${result.statusText || 'Error'}`;
+      } else {
+        responseStatusBadge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
+        responseStatusBadge.textContent = result.statusText || 'Failed';
+      }
+
+      responseLatency.textContent = `${result.durationMs ?? 0} ms`;
+      responseTime.textContent = new Date().toLocaleTimeString();
+
+      const displayContent = result.body 
+        ? (typeof result.body === 'object' ? JSON.stringify(result.body, null, 2) : result.body)
+        : (result.error || result.rawBody || 'Không có response body');
+
+      responseBodyView.textContent = displayContent;
+
+      // Add to History
+      addHistoryItem({
+        timestamp: new Date().toLocaleTimeString(),
+        code: payload.DATA.ORDER_STATUS,
+        order: payload.DATA.ORDER_NUMBER,
+        targetUrl,
+        httpStatus: result.status,
+        latency: result.durationMs ?? 0,
+        success: result.success
+      });
+    }
+
+    function addHistoryItem(item) {
+      historyList.unshift(item);
+      if (historyList.length > 10) historyList.pop();
+
+      emptyHistoryRow.classList.add('hidden');
+      
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-800/30';
+      tr.innerHTML = `
+        <td class="py-2 px-3 text-slate-400">${item.timestamp}</td>
+        <td class="py-2 px-3 font-semibold text-slate-200">${item.code}</td>
+        <td class="py-2 px-3 font-mono text-slate-300">${item.order}</td>
+        <td class="py-2 px-3 font-mono text-slate-400 truncate max-w-xs" title="${item.targetUrl}">${item.targetUrl}</td>
+        <td class="py-2 px-3">
+          <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.success ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+            ${item.httpStatus || 'ERR'}
+          </span>
+        </td>
+        <td class="py-2 px-3 text-slate-400">${item.latency} ms</td>
+      `;
+      historyTableBody.prepend(tr);
+    }
+
+    btnClearHistory.addEventListener('click', () => {
+      historyList = [];
+      historyTableBody.innerHTML = '';
+      emptyHistoryRow.classList.remove('hidden');
+      historyTableBody.appendChild(emptyHistoryRow);
+      showToast('Đã xóa lịch sử gửi');
+    });
+
+    // Run Init
+    initInputs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "vtp-webhook-mock",
+  "version": "1.0.0",
+  "description": "ViettelPost Webhook Mock Simulator for QA / Tester",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "viettelpost",
+    "webhook",
+    "mock",
+    "simulator",
+    "qa",
+    "tester"
+  ],
+  "author": "",
+  "license": "MIT"
+}
